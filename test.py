@@ -19,6 +19,9 @@ additionArray = '5+5*2+5-2'.split("-")
 print(additionArray)
  """
 
-array = '"hello world"'.split('"')
+""" array = '"hello world"'.split('"')
 isString = '"' in '"hello world"'
-print(array)
+print(array) """
+
+
+print("52.2".isnumeric())
