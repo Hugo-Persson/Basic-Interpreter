@@ -1,0 +1,120 @@
+* Load text 
+* Split into lines 
+* Create instruction list
+* Add instructions into hashmap where the key is the line
+* Transport token hasmap into parser
+
+Basic structure:
+
+{line number}(optional) {key}
+
+key = var(variables,array index)/command(PRINT, REM, ARRAY, INPUT, END, GOTO, IF, FOR, ... https://docs.repl.it/misc/basic)/functions
+
+
+var= array[index][index]..., varName 
+
+
+Creating token
+
+1. Split line based on spaces
+2. create lineExection   for line based on 
+{
+    lineNum: {INT}, 
+    command: {string}
+    value:{nested lex tokens}
+    
+}
+
+Examples:
+
+5 PRINT "Hello"
+=>
+{
+    lineNum: 5,
+    command "PRINT",
+    value:{type:"VAL",value:"Hello"}
+}
+
+PRINT "Hello" 
+=>
+{
+    lineNum: -1,
+    command: "PRINT",
+    value:{type:"VAL",value"Hello"}
+}
+x = 0
+=>
+{
+    lineNum:-1,
+    command:"VARASSIGN",
+    varId:"x",
+    value:{type:"VAL", value:0}
+}
+search for "x" in dictionary, if it exist overwrite its value otherwiser add a new var
+
+
+
+PRINT x
+=>
+{
+    lineNum:-1,
+    command"PRINT",
+    value:{type:"VAR",varId:"x"}
+}
+PRINT x+" World"
+=>
+{
+    lineNum: -1,
+    command: "PRINT,
+    valu
+}
+
+
+
+OBJS,
+
+Line executing OBJ
+{
+    lineNum: int,
+    command: "String",
+    value: tokenOBJ
+}
+
+command = documentation command + ASSIGNVAR
+
+tokenOBJ,
+{
+    type: "String",
+    #DEPEND on type#
+}
+different types 
+"VAR" = {varID}
+"VAL" = {value}
+"MATH" => {operator:"string",num1:DOUBLE, num2,DOUBLE}
+
+3. 
+hashmap array 
+add all lineExecution obj in a list
+go through array
+if lineNum > -1 
+    create a entry in dictionary/hasmap with linenum as key and index in lineExection array as value
+
+
+
+GOTO flow
+manuall lineNum serve as a calling point but code will continue from point even if futuer lines don't have a line number
+
+
+MATH
+Split string by reverse priority rule
+create a inner array for every step 
+then execute inner to outer
+
+
+EXAMPLE:
+
+5+4*5/2-3 =12
+
+[5,[[[4,5]],3]]
+
+{type:"MATH",operator:"+",values:[{type:"VAL",value:5}]}
