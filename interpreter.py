@@ -4,7 +4,6 @@ lineDeclaredListGlobal={}
 
 
 def getValue(val):
-    print("VAL",val)
     value = None
     if(val["type"]=="INT"):
         value=int(val["value"])
@@ -21,19 +20,29 @@ def getValue(val):
 
 def handleVariableAssignment(execObj):
     variables[execObj["varId"]]=getValue(execObj["value"])
-    print("VARS",variables)
     return
 
 def handlePrint(execObj):
     print(getValue(execObj["value"]))
     return
 
-def runInterpreter(executionArray, lineDeclaredList):
+
+def runInterpreter(executionArray, lineDeclaredList,start):
     executionArrayGlobal=executionArray
     lineDeclaredListGlobal=lineDeclaredList
-    for i in executionArray:
-        print(i)
+
+    for index in range(start,len(executionArray)):
+
+        i = executionArray[index]
+
+
+        if(i["command"]=="GOTO"):
+            lineNum = getValue(i["value"])
+            runInterpreter(executionArray,lineDeclaredList,lineDeclaredList[str(lineNum)])
+            return
         {
             "PRINT":handlePrint,
             "VARASSIGN":handleVariableAssignment
         }.get(i["command"],lambda:print("Error wrong command"))(i)
+
+        
