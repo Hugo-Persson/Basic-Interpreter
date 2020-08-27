@@ -17,7 +17,7 @@ def isFloat(val):
 def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hello" + var and create a token
     #Param is either math equation or a value
 
-    param = " ".join(param)#incase a string got splitted up when I split up all spaces earlier
+    #param = " ".join(param)#incase a string got splitted up when I split up all spaces earlier (fix big problem, a string will add spaces )
     isString = '"' in param
     
     token = {}
@@ -41,7 +41,20 @@ def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hell
     return token
 
 def arrayToken(obj):
-    return {}   
+    obj["filteredWords"].pop(0)
+
+    varId = None
+    arrDepth = 1
+    if("," in obj["filteredWords"][0]):
+        arr = obj["filteredWords"][0].split(",") # for a a line like ARRAY c,3 the array should look like [c,3]
+        varId=arr[0]
+        arrDepth = int(arr[1])
+    else:
+        varId=obj["filteredWords"][0]
+    if(len(varId)>1):
+        print("ERROR: Arr var name too long")
+        return
+    return {"command":"ARRINIT","varId":varId,"arrDepth":arrDepth,"lineNum":obj["lineNum"]} 
 
 def printToken(obj):
     words = obj["filteredWords"]
@@ -59,15 +72,23 @@ def gotoToken(obj):
 def variableAssignment(obj):
     if(obj["filteredWords"][0]=="LET"):
         obj["filteredWords"].pop(0)
-    noSpaceString = "".join(obj["filteredWords"])
-    if("=" in noSpaceString):
-        arr = noSpaceString.split("=") #should look like [x,34]
-        if(len(arr[0])>1):
+    line = " ".join(obj["filteredWords"])
+    if("=" in line):
+        arr = line.split("=") #should look like [x,34]
+        if(len(arr[0])>1): #Checking if the varible name is greater than 1 the only time this is allowed is when it is an array
+            if("[" in arr[0]):
+                
+                #indexDepthArr = [int(x[:-1] for x in arr[0].split("["))]
+                #indexDepthArr = list(min(map(lambda x: int(x[:-1]),arr[0].split("["))))
+                indexes = arr[0].split("[")
+                varId = indexes.pop(0) 
 
+                indexDepthArr = list(map((lambda x:int(x[:-1])),indexes))
+                
+                return {"varId":varId, "command":"VARASSIGN","array":True,"arrDepth":indexDepthArr,"lineNum":obj["lineNum"],"value":tokenizeValue(arr[1])}
             print("ERROR: variable name too long, line 68")
         else:
-
-            return {"lineNum":obj["lineNum"],"command":"VARASSIGN","varId":arr.pop(0),"value":tokenizeValue(arr)}
+            return {"lineNum":obj["lineNum"],"command":"VARASSIGN","array":False,"varId":arr.pop(0),"value":tokenizeValue(arr)}
     
 
 def getExecutionArray():

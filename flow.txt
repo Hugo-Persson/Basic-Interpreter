@@ -118,3 +118,17 @@ EXAMPLE:
 [5,[[[4,5]],3]]
 
 {type:"MATH",operator:"+",values:[{type:"VAL",value:5}]}
+
+
+c[3][3][3]
+
+
+ARRAY:
+
+When declared allocate space for array so 
+
+
+arr = [  ]
+
+When creating an array create 
+
