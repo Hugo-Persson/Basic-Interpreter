@@ -149,3 +149,110 @@ Second element should be execution so run it through exec functions
 "lineNum":obj["lineNum"],
 "logicalStatement":logicalStatement,
 "execObj":execObj}
+
+Logical operator
+
+[value] == [value]
+[value] AND [value]
+[value] OR [value]
+
+[value] > [value]
+[value] < [value]
+[value] >= [value]
+[value] <= [value]
+
+NOT([value])
+
+
+Math
+[value] + [value]
+[value] - [value]
+[value] / [value]
+[value] * [value]
+[value] % [value]
+
+Create new function that 
+
+
+problem 
+
+
+[variable] = [value]
+
+
+Split by reverse priority list
+
+1. subtraction
+2. addition
+3. division
+4. mutliplication
+5. Exponents
+6. Parantheses
+
+
+
+
+5*5==25
+2==5 AND
+
+OR is prioritised before 
+
+
+
+True AND False OR True
+
+Split by AND
+If array > 1 send all elements in to tokenizeValue again, return the return value
+Then split by OR and repeat process
+
+If these check have passed we should have a string that looks like this 
+[value] > [value]
+[value] < [value]
+[value] >= [value]
+[value] <= [value]
+[value] == [value]
+
+check with if for each of these cases
+if none i fuffiled you have either have Math statement or base value like these String, Int, Decimal, Boolean,
+
+split by order priority list and do this for each step
+If len > 1
+    create math token, with v
+
+Parser
+5-5-5-5
+[5,5,5,5]
+
+
+Inter
+eval ([5,5,5,5].join("-"))
+
+5+(5*5)-6*5+1=1
+
+{command:"Math",calculateTerm:*,values:[...]}
+
+start by mapping the array through the getvalue function (the last values will be the most prioritised)
+then concat to string with calculate term and run through eval function
+then return value
+
+
+
+deal with forbidden combos in parser "he"/2  or simillir
+
+
+Check order
+
+
+[value] > [value]
+[value] < [value]
+[value] >= [value]
+[value] <= [value]
+[value] == [value]
+
+1. subtraction
+2. addition
+3. division
+4. mutliplication
+5. Exponents
+6. Parantheses
+

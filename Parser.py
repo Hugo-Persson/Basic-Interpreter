@@ -1,5 +1,5 @@
 from interpreter import runInterpreter
-
+import re;
 
 def getLines():
     f = open("code.bas","r");
@@ -14,11 +14,9 @@ def isFloat(val):
             return False
     return True
 
-def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hello" + var and create a token
-    #Param is either math equation or a value
 
-    #param = " ".join(param)#incase a string got splitted up when I split up all spaces earlier (fix big problem, a string will add spaces )
-    isString = '"' in param
+def getTokenValue(param): #creates a small chunk, it handles values like string and int
+    isString =  re.search(r"\"|\'",param)
     
     token = {}
 
@@ -40,6 +38,27 @@ def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hell
         #probably a var or error
     return token
 
+
+def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hello" + var and create a token
+    #Param is either math equation or a value
+
+    #param = " ".join(param)#incase a string got splitted up when I split up all spaces earlier (fix big problem, a string will add spaces )
+    andChunks = param.split("AND")
+    if(len(andChunks)):
+        token = {"type":"AND","values":[]}
+        for i in andChunks:
+            token["values"].append(tokenizeValue(i))
+        
+        return token
+    orChunks = param.split("OR")
+    if(len(orChunks)):
+        token = {"type":"OR","values":[]}
+        for i in orChunks:
+            token["values"].append(tokenizeValue(i))
+        
+        return token
+    
+
 def arrayToken(obj):
     obj["filteredWords"].pop(0)
 
@@ -55,6 +74,8 @@ def arrayToken(obj):
         print("ERROR: Arr var name too long, exiting application")
         exit()
     return {"command":"ARRINIT","varId":varId,"arrDepth":arrDepth,"lineNum":obj["lineNum"]} 
+
+
 
 def printToken(obj):
     words = obj["filteredWords"]
@@ -72,11 +93,13 @@ def gotoToken(obj):
     return{"lineNum":obj["lineNum"],"command":"GOTO","value":val}
 
 def variableAssignment(obj):
+    regexPattern = re.compile(r"(?<!=)=(?!=)")
+
     if(obj["filteredWords"][0]=="LET"):
         obj["filteredWords"].pop(0)
     line = " ".join(obj["filteredWords"])
-    if("=" in line):
-        arr = line.split("=") #should look like [x,34]
+    if(re.search(regexPattern,line)):
+        arr = re.split(regexPattern,line) #should look like [x,34]
         if(len(arr[0])>1): #Checking if the varible name is greater than 1 the only time this is allowed is when it is an array
             if("[" in arr[0]):
                 
@@ -91,13 +114,19 @@ def variableAssignment(obj):
             print("ERROR: variable name too long, line 68, exiting application")
             exit()
         else:
+            
             return {"lineNum":obj["lineNum"],"command":"VARASSIGN","array":False,"varId":arr.pop(0),"value":tokenizeValue(arr)}
-    
+    else:
+        print("ERROR: Unknow command exiting ")
+        exit()
+
 def getExecutionObj(line):
     line = line.replace("\n","")
     lineCopy = line
     lineCopy.replace(" ","")
     
+
+
     if(len(lineCopy)==0): #deals with empty lines
         return None;
     
@@ -132,7 +161,7 @@ def ifStatement(obj):
     return {"command":"IF","lineNum":obj["lineNum"],"logicalStatement":logicalStatement,"execObj":execObj}
 
 def ifElseStatement(obj):
-    import re;
+    
     concattedString = " ".join(obj["filteredWords"])
     chunks = re.split("THEN | ELSE",concattedString)
     logicalStatement = tokenizeValue(chunks[0])
