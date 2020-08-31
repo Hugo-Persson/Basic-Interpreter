@@ -52,8 +52,8 @@ def arrayToken(obj):
     else:
         varId=obj["filteredWords"][0]
     if(len(varId)>1):
-        print("ERROR: Arr var name too long")
-        return
+        print("ERROR: Arr var name too long, exiting application")
+        exit()
     return {"command":"ARRINIT","varId":varId,"arrDepth":arrDepth,"lineNum":obj["lineNum"]} 
 
 def printToken(obj):
@@ -66,7 +66,9 @@ def gotoToken(obj):
 
     val = tokenizeValue(obj["filteredWords"])
     if(val["type"]!="INT"):
-        print("ERROR: goto value not int")
+        print("ERROR: goto value not int, exiting application")
+        exit()
+        
     return{"lineNum":obj["lineNum"],"command":"GOTO","value":val}
 
 def variableAssignment(obj):
@@ -86,39 +88,64 @@ def variableAssignment(obj):
                 indexDepthArr = list(map((lambda x:int(x[:-1])),indexes))
                 
                 return {"varId":varId, "command":"VARASSIGN","array":True,"arrDepth":indexDepthArr,"lineNum":obj["lineNum"],"value":tokenizeValue(arr[1])}
-            print("ERROR: variable name too long, line 68")
+            print("ERROR: variable name too long, line 68, exiting application")
+            exit()
         else:
             return {"lineNum":obj["lineNum"],"command":"VARASSIGN","array":False,"varId":arr.pop(0),"value":tokenizeValue(arr)}
     
+def getExecutionObj(line):
+    line = line.replace("\n","")
+    lineCopy = line
+    lineCopy.replace(" ","")
+    
+    if(len(lineCopy)==0): #deals with empty lines
+        return None;
+    
+    words = line.split(" ")
+    
+    executionObj = {}
+    filteredWords = [word for word in words if word!=" " and word !=""]
+    lineNum = -1
+    if(filteredWords[0].isnumeric()):
+        lineNum=filteredWords.pop(0)
+        
+    if(filteredWords[0]=="REM"):
+        return
+    
+    token = {
+        "ARRAY":arrayToken,
+        "PRINT":printToken,
+        "LET":variableAssignment,
+        "GOTO": gotoToken
+
+    }.get(filteredWords[0],variableAssignment)({"filteredWords":filteredWords,"lineNum":lineNum})
+    return token;
+
+def ifStatement(obj):
+    obj["filteredWords"].pop(0);
+    concattedString = " ".join(obj["filteredWords"])
+    if("ELSE" in concattedString):
+        return ifElseStatement(obj)
+    chunks = concattedString.split("THEN")
+    logicalStatement = tokenizeValue(chunks[0])
+    execObj = getExecutionObj(chunks[1])
+    return {"command":"IF","lineNum":obj["lineNum"],"logicalStatement":logicalStatement,"execObj":execObj}
+
+def ifElseStatement(obj):
+    import re;
+    concattedString = " ".join(obj["filteredWords"])
+    chunks = re.split("THEN | ELSE",concattedString)
+    logicalStatement = tokenizeValue(chunks[0])
+    ifExecObj = getExecutionObj(chunks[1])
+    elseExecObj = getExecutionObj(chunks[2])
+    return {"command":"ELSE","lineNum":obj["lineNum"],"logicalStatement":logicalStatement,"ifExecObj":ifExecObj,"elseExecObj":elseExecObj}
 
 def getExecutionArray():
     executionArray = []
     for line in lines: 
-        line = line.replace("\n","")
-        lineCopy = line
-        lineCopy.replace(" ","")
-        
-        if(len(lineCopy)==0): #deals with empty lines
-            continue
-        
-        words = line.split(" ")
-        
-        executionObj = {}
-        filteredWords = [word for word in words if word!=" " and word !=""]
-        lineNum = -1
-        if(filteredWords[0].isnumeric()):
-            lineNum=filteredWords.pop(0)
-            
-        if(filteredWords[0]=="REM"):
-            return
-        
-        token = {
-            "ARRAY":arrayToken,
-            "PRINT":printToken,
-            "LET":variableAssignment,
-            "GOTO": gotoToken
-
-        }.get(filteredWords[0],variableAssignment)({"filteredWords":filteredWords,"lineNum":lineNum})
+        token = getExecutionObj(line)
+        if(token==None):
+            continue;
         executionArray.append(token)
     return executionArray
 

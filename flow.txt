@@ -131,4 +131,21 @@ When declared allocate space for array so
 arr = [  ]
 
 When creating an array create 
+"
 
+
+
+IF [Logical statement] THEN [Execution obj] 
+IF [Logical statement] THEN [Execution obj] ELSE [Execution obj]
+
+Pop first filtered word 
+then join with space
+then split string at THEN 
+
+first element should be Logical statement that you run through tokenize functions
+Second element should be execution so run it through exec functions
+
+{"command":"IF",
+"lineNum":obj["lineNum"],
+"logicalStatement":logicalStatement,
+"execObj":execObj}

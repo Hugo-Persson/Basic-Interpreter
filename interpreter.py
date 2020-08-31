@@ -51,26 +51,35 @@ def handleArrInit(execObj):
     print("handleArR",execObj)
     variables[execObj["varId"]]={"arrDepth":execObj["arrDepth"],"array":True,"value":generateNestedArray(execObj["arrDepth"])}
 
+
+
 def handleArrayAssignment(execObj):
     arrValue = variables[execObj["varId"]]["value"]
     arrDepth = execObj["arrDepth"]
+    if(len(arrDepth)>variables[execObj["varId"]]["arrDepth"]):
+        print("ERROR: Too deep in array")
+        exit()
     lastValue = arrDepth.pop(len(arrDepth)-1) #The array is reference based but not the value in the array
     for i in arrDepth: #[0,1,0]
         if(len(arrValue)-2<i):
             #expand array
             base  = arrValue[len(arrValue)-1] #I always have one element extra so I can copy it
             for n in range(len(arrValue),i+2):
-                arrValue.append(base)
+                arrValue.append(base.copy()) # I need to copy because otherwise all arrays are connected by reference
             arrValue=arrValue[i];
         else:
             arrValue=arrValue[i]
+    print("PRELAST",variables)
     if(lastValue>len(arrValue)-2):
         base= None
         if(len(arrDepth)+1!=variables[execObj["varId"]]["arrDepth"]): # I add one because the last elements has been popped
             base  = arrValue[len(arrValue)-1]
         for i in range(len(arrValue),lastValue+2):
-            arrValue.append(base)
-    print("ARRVALUE",arrValue) 
+            if(base==None):
+                arrValue.append(base)
+            else:
+                arrValue.append(base.copy())
+    print("ARRVALUE",variables) 
     arrValue[lastValue]=getValue(execObj["value"])
 
 def handleVariableAssignment(execObj):
@@ -82,6 +91,30 @@ def handleVariableAssignment(execObj):
     return
 
 
+def parseExecObj(i):
+    
+    if(i["command"]=="GOTO"):
+        lineNum = getValue(i["value"])
+        runInterpreter(executionArrayGlobal,lineDeclaredListGlobal,lineDeclaredListGlobal[str(lineNum)])
+        return
+    {
+        "PRINT":handlePrint,
+        "VARASSIGN":handleVariableAssignment,
+        "ARRINIT":handleArrInit,
+        "IF":ifStatement()
+        
+    }.get(i["command"],lambda:print("Error wrong command"))(i)
+
+
+def ifStatement(execObj):
+    if(getValue(execObj["logicalStatement"])): #PROBLEM: I do not check the execOBJ so it could anything
+        parseExecObj(execObj["execObj"])
+
+def ifElseStatement(execObj):
+    if(getValue(execObj["logicalStatement"])): #PROBLEM: I do not check the execOBJ so it could anything
+        parseExecObj(execObj["ifExecObj"])
+    else:
+        parseExecObj(execObj["elseExecObj"])
 
 def runInterpreter(executionArray, lineDeclaredList,start):
     executionArrayGlobal=executionArray
@@ -92,16 +125,7 @@ def runInterpreter(executionArray, lineDeclaredList,start):
         i = executionArray[index]
 
 
-        if(i["command"]=="GOTO"):
-            lineNum = getValue(i["value"])
-            runInterpreter(executionArray,lineDeclaredList,lineDeclaredList[str(lineNum)])
-            return
-        {
-            "PRINT":handlePrint,
-            "VARASSIGN":handleVariableAssignment,
-            "ARRINIT":handleArrInit,
-            
-        }.get(i["command"],lambda:print("Error wrong command"))(i)
+        parseExecObj(i)
     print("VARIABLES",variables)
 
         
