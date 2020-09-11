@@ -4,19 +4,7 @@ lineDeclaredListGlobal={}
 
 
 def getValue(val):
-    
-    value = None
-    if(val["type"]=="INT"):
-        value=int(val["value"])
-    elif(val["type"]=="FLOAT"):
-        value=float(val["value"])
-    elif(val["type"]=="STRING"):
-        value=val["value"]
-    elif(val["type"]=="VAR"):
-        value=variables[val["varId"]]
-    else:
-        print("Value wrong type, parser error")
-    return value
+    return (eval(val["str"]))
 
 
 def handlePrint(execObj):
@@ -90,6 +78,14 @@ def handleVariableAssignment(execObj):
     variables[execObj["varId"]]= {"array":False, "value":getValue(execObj["value"])} 
     return
 
+def forLoop(execObj):
+    handleVariableAssignment(execObj["variable"]);
+
+    while variables[execObj["varaible"]["varId"]] < execObj["TO"]:
+        for obj in execObj["execObjs"]:
+            parseExecObj(obj)
+        variables[execObj["varaible"]["varId"]]+=execObj["STEP"]
+    variables.pop(execObj["varaible"]["varId"])
 
 def parseExecObj(i):
     
@@ -101,7 +97,7 @@ def parseExecObj(i):
         "PRINT":handlePrint,
         "VARASSIGN":handleVariableAssignment,
         "ARRINIT":handleArrInit,
-        "IF":ifStatement()
+        "IF":ifStatement
         
     }.get(i["command"],lambda:print("Error wrong command"))(i)
 

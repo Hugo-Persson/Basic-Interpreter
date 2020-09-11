@@ -256,3 +256,53 @@ Check order
 5. Exponents
 6. Parantheses
 
+subtractionChunks = param.split("-")
+    if(len(subtractionChunks)>1):
+        token = {"type":"subtraction","values":[]}
+        for i in subtractionChunks:
+            token["values"].append(tokenizeValue(i))        
+        return token
+    additionChunks = param.split("+")
+    if(len(orChunks)>1):
+        token = {"type":"addition","values":[]}
+        for i in additionChunks:
+            token["values"].append(tokenizeValue(i))
+        return token
+    
+    divi = param.split("+")
+    if(len(orChunks)>1):
+        token = {"type":"addition","values":[]}
+        for i in additionChunks:
+            token["values"].append(tokenizeValue(i))
+        return token
+
+
+
+
+
+
+
+
+
+LOOPS
+
+execObj will look like
+{
+    forLine: "FOR I = 1 TO 10"
+    runLines: ["PRINT I"]
+
+}
+
+
+in execObj parser if FOR then keep looping and add to runLines array
+
+
+
+FOr looping
+
+FOR []
+
+
+FOR when ENDINg one loop before another
+
+If one for loop has another for loop inside it but the inner for loop ends after the out

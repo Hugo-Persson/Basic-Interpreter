@@ -1,6 +1,13 @@
 from interpreter import runInterpreter
 import re;
 
+codeIndex = 0
+
+def codeError(message):
+    print(message + "at line "+str(codeIndex))
+    exit()
+
+
 def getLines():
     f = open("code.bas","r");
     return f.readlines()
@@ -16,6 +23,7 @@ def isFloat(val):
 
 
 def getTokenValue(param): #creates a small chunk, it handles values like string and int
+    
     isString =  re.search(r"\"|\'",param)
     
     token = {}
@@ -40,23 +48,30 @@ def getTokenValue(param): #creates a small chunk, it handles values like string 
 
 
 def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hello" + var and create a token
-    #Param is either math equation or a value
+    print("PARAM",param)
+    strs = []
+    variables =[]
 
-    #param = " ".join(param)#incase a string got splitted up when I split up all spaces earlier (fix big problem, a string will add spaces )
-    andChunks = param.split("AND")
-    if(len(andChunks)):
-        token = {"type":"AND","values":[]}
-        for i in andChunks:
-            token["values"].append(tokenizeValue(i))
-        
-        return token
-    orChunks = param.split("OR")
-    if(len(orChunks)):
-        token = {"type":"OR","values":[]}
-        for i in orChunks:
-            token["values"].append(tokenizeValue(i))
-        
-        return token
+    # Find variables by checking for alfabetic character that is not inside string
+    inString = False
+    stringSign = None
+    for char in param:
+
+        if inString:
+            if char==stringSign:
+                inString=False
+            
+        else: 
+            if char=="'" or char =='"':
+                inString=True
+                stringSign=char
+            #save index so I can later split look at the none string parts
+
+    param = param.replace("AND","&&")
+    param = param.replace("OR","||")
+    param = param.replace("NOT","!")
+    return {"type":"value","strs":strs,"variables":variables}
+
     
 
 def arrayToken(obj):
@@ -71,8 +86,7 @@ def arrayToken(obj):
     else:
         varId=obj["filteredWords"][0]
     if(len(varId)>1):
-        print("ERROR: Arr var name too long, exiting application")
-        exit()
+        codeError("ERROR: Arr var name too long, exiting application")
     return {"command":"ARRINIT","varId":varId,"arrDepth":arrDepth,"lineNum":obj["lineNum"]} 
 
 
@@ -115,11 +129,22 @@ def variableAssignment(obj):
             exit()
         else:
             
-            return {"lineNum":obj["lineNum"],"command":"VARASSIGN","array":False,"varId":arr.pop(0),"value":tokenizeValue(arr)}
+            return {"lineNum":obj["lineNum"],"command":"VARASSIGN","array":False,"varId":arr.pop(0),"value":tokenizeValue(arr[0])}
     else:
         print("ERROR: Unknow command exiting ")
         exit()
 
+
+def forToken(obj):
+    obj["filteredWords"].pop(0)
+    joinedLine = " ".join(obj["filteredWords"])
+    chunks = joinedLine.split("TO")
+    variableToken = variableAssignment({"filteredWords":chunks[0].split(" "),"lineNum":-1})
+
+    return{"command":"FOR", "variable":variableToken,"TO":int(chunks[1]),"execObjs":[],"STEP":1}
+
+def nextToken(obj):
+    return{"command":"NEXT","varId":int(obj["filteredWords"][1])}
 def getExecutionObj(line):
     line = line.replace("\n","")
     lineCopy = line
@@ -145,7 +170,10 @@ def getExecutionObj(line):
         "ARRAY":arrayToken,
         "PRINT":printToken,
         "LET":variableAssignment,
-        "GOTO": gotoToken
+        "GOTO": gotoToken,
+        "IF": ifStatement,
+        "FOR":forToken,
+        "NEXT":nextToken
 
     }.get(filteredWords[0],variableAssignment)({"filteredWords":filteredWords,"lineNum":lineNum})
     return token;
@@ -170,12 +198,28 @@ def ifElseStatement(obj):
     return {"command":"ELSE","lineNum":obj["lineNum"],"logicalStatement":logicalStatement,"ifExecObj":ifExecObj,"elseExecObj":elseExecObj}
 
 def getExecutionArray():
+    inForLoop=False
+    forToken = []
     executionArray = []
     for line in lines: 
         token = getExecutionObj(line)
+        
         if(token==None):
             continue;
+        if(token["command"]=="FOR"):
+            inForLoop=True
+            forToken.append(token)
+            continue
+        if(token["command"]=="NEXT"):
+            for token in forToken:
+                if(token["variable"]["varId"]==token["varId"]):
+                    forToken.remove(token)
+                    executionArray.append(token)
+                    continue
+        if inForLoop:
+            forToken[len(forToken)-1]["execObjs"].append(token)
         executionArray.append(token)
+        
     return executionArray
 
 def getLineDeclaredExecutionList(executionArray):
