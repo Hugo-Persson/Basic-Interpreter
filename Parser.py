@@ -49,27 +49,51 @@ def getTokenValue(param): #creates a small chunk, it handles values like string 
 
 def tokenizeValue(param): #will take a value like 4+4 or "hello world " or "hello" + var and create a token
     print("PARAM",param)
+    param = param.replace("AND","&&")
+    param = param.replace("OR","||")
+    param = param.replace("NOT","!")
     strs = []
     variables =[]
-
+    indexes = []
     # Find variables by checking for alfabetic character that is not inside string
     inString = False
     stringSign = None
+    index = 0
     for char in param:
-
+        
         if inString:
             if char==stringSign:
                 inString=False
+                
+
             
         else: 
             if char=="'" or char =='"':
                 inString=True
                 stringSign=char
-            #save index so I can later split look at the none string parts
+                indexes.append(index)
+            else:
+                indexes.append(index)
+                #save index so I can later split look at the none string parts
+        index+=1
 
-    param = param.replace("AND","&&")
-    param = param.replace("OR","||")
-    param = param.replace("NOT","!")
+    
+    subStrs = []
+    i = 0
+    while i<len(indexes):
+        subStrs.append(param[indexes[i]:indexes[i+1]])
+    variables = []
+    for sub in subStrs:
+        splitted = sub.split()
+        splitted=filter(lambda x: x!=" "and x!="",)
+        for n in splitted:
+            if n.isalpha():
+                if(len(n)==1):
+                    variables.append(n)
+                else:
+                    print("ERROR: variable name too long at line: "+codeIndex)
+                
+    
     return {"type":"value","strs":strs,"variables":variables}
 
     

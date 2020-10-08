@@ -306,3 +306,15 @@ FOR []
 FOR when ENDINg one loop before another
 
 If one for loop has another for loop inside it but the inner for loop ends after the out
+
+
+
+
+gonna have strings like these
+
+4+a+
+if a == 4 
+
+I want to replace alphabetic charachters with variable tokens
+split by spaces
+remove empty elements
